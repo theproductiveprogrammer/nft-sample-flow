@@ -98,10 +98,66 @@ async function buyer_claimable_balance() {
   return claim
 }
 
+/* TODO: create an account with the hash of the NFT asset. For now just
+ * creating a dummy account
+ *    way/
+ * activate the NFT account and set the TSS and seller as signatories
+ */
 async function seller_create_nft(claim) {
   spinner = ora(`${chalk.green('seller:')} Creating NFT`).start()
-  await dummy()
-  spinner.succeed(`${chalk.green('seller:')} NFT created! ✨`)
+
+  const server = getSvr()
+  const acc = await server.loadAccount(SELLER.publicKey)
+
+  const nft = StellarSdk.Keypair.random()
+
+  await activate_account_1()
+  await set_signatories_1()
+
+  spinner.succeed(`${chalk.green('seller:')} NFT created! ✨ ${chalk.dim(nft.publicKey())}`)
+
+  function activate_account_1() {
+    const op = {
+      destination: nft.publicKey(),
+      startingBalance: "5",
+    }
+
+    const txn = new StellarSdk.TransactionBuilder(acc, { fee: StellarSdk.BASE_FEE, networkPassphrase: getNetworkPassphrase() })
+      .addOperation(StellarSdk.Operation.createAccount(op))
+      .setTimeout(180)
+      .build()
+
+    txn.sign(StellarSdk.Keypair.fromSecret(SELLER.secretKey))
+
+    return server.submitTransaction(txn)
+  }
+
+  async function set_signatories_1() {
+    const op1 = {
+      signer: {
+        ed25519PublicKey: TSS.signer,
+        weight: 1,
+      }
+    }
+    const op2 = {
+      signer: {
+        ed25519PublicKey: SELLER.publicKey,
+        weight: 1,
+      }
+    }
+
+    const acc = await server.loadAccount(nft.publicKey())
+
+    const txn = new StellarSdk.TransactionBuilder(acc, { fee: StellarSdk.BASE_FEE, networkPassphrase: getNetworkPassphrase() })
+      .addOperation(StellarSdk.Operation.setOptions(op1))
+      .addOperation(StellarSdk.Operation.setOptions(op2))
+      .setTimeout(180)
+      .build()
+
+    txn.sign(nft)
+
+    return server.submitTransaction(txn)
+  }
 }
 
 async function seller_xcute_tss(nft, claim) {
