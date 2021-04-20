@@ -1,6 +1,6 @@
 # NFT Sample Flow
 
-A quick sample remove of an NFT with a TSS Server
+A quick sample demo of an NFT with a TSS Server
 
 ![Demo](./nft-flow.gif)
 
