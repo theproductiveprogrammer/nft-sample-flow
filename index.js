@@ -55,9 +55,9 @@ async function main() {
   try {
     const claim = await buyer_claimable_balance()
     const nft = await seller_create_nft()
-    const xdr = await seller_xcute_tss(nft, claim)
+    const smartContract = await seller_xcute_tss(nft, claim)
 
-    await seller_sign_and_deliver(xdr)
+    await seller_sign_and_deliver(smartContract)
   } catch(e) {
     spinner.fail()
     console.error(e)
@@ -192,12 +192,22 @@ async function seller_xcute_tss(nft, claim) {
 
   spinner.succeed(`${chalk.green('seller:')} Received Smart Contract Envelope ✉️`)
 
-  return resp.xdr
+  return resp
 }
 
-async function seller_sign_and_deliver(xdr) {
+/*    way/
+ * sign and deliver smart contract to claim fee and hand NFT to buyer
+ */
+async function seller_sign_and_deliver(smartContract) {
   spinner = ora(`${chalk.green('seller:')} Sign and Deliver NFT via Smart Contract`).start()
-  await dummy()
+
+  const server = getSvr()
+
+  const txn = new StellarSdk.Transaction(smartContract.xdr, getNetworkPassphrase())
+  txn.addSignature(smartContract.signer, smartContract.signature)
+
+  await server.submitTransaction(txn)
+
   spinner.succeed(`${chalk.green('seller:')} NFT Delivered! 😇`)
 }
 
