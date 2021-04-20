@@ -56,10 +56,45 @@ async function main() {
   }
 }
 
+/*    way/
+ *  create a claimable balance valid for a minute and hand it's id over
+ */
 async function buyer_claimable_balance() {
   spinner = ora(`${chalk.yellow('buyer:')} Creating claimable balance`).start()
-  dummy()
-  spinner.succeed(`${chalk.yellow('buyer:')} Claimable balance created! 💸`)
+
+  const server = getSvr()
+  const acc = await server.loadAccount(BUYER.publicKey)
+
+  const soon = Math.ceil((Date.now() / 1000) + 60)
+  const canClaim = StellarSdk.Claimant.predicateBeforeRelativeTime("60");
+  const canReclaim = StellarSdk.Claimant.predicateNot(StellarSdk.Claimant.predicateBeforeAbsoluteTime(soon.toString()))
+
+  const claimableBalanceEntry = StellarSdk.Operation.createClaimableBalance({
+    claimants: [
+      new StellarSdk.Claimant(SELLER.publicKey, canClaim),
+      new StellarSdk.Claimant(BUYER.publicKey, canReclaim)
+    ],
+    asset: StellarSdk.Asset.native(),
+    amount: "420",
+  })
+
+  const tx = new StellarSdk.TransactionBuilder(acc, {fee: StellarSdk.BASE_FEE})
+    .addOperation(claimableBalanceEntry)
+    .setNetworkPassphrase(getNetworkPassphrase())
+    .setTimeout(180)
+    .build()
+
+  tx.sign(StellarSdk.Keypair.fromSecret(BUYER.secretKey))
+
+  const txResponse = await server.submitTransaction(tx)
+  const txResult = StellarSdk.xdr.TransactionResult.fromXDR(txResponse.result_xdr, "base64")
+  const results = txResult.result().results()
+  const result = results[0].value().createClaimableBalanceResult()
+  const claim = result.balanceId().toXDR("hex")
+
+  spinner.succeed(`${chalk.yellow('buyer:')} Claimable balance created! 💸 ${chalk.dim(claim)}`)
+
+  return claim
 }
 
 async function seller_create_nft(claim) {
