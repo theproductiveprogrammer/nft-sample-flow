@@ -80,7 +80,7 @@ async function buyer_claimable_balance() {
 
   const claimableBalanceEntry = StellarSdk.Operation.createClaimableBalance({
     claimants: [
-      new StellarSdk.Claimant(SELLER.publicKey, canClaim),
+      new StellarSdk.Claimant(TSS.signer, canClaim),
       new StellarSdk.Claimant(BUYER.publicKey, canReclaim)
     ],
     asset: StellarSdk.Asset.native(),
