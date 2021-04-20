@@ -31,6 +31,8 @@ const TSS = {
   signer: 'GCYTED6QWSGDNLQ2RBXDVYSKCOUB2BC6DLKGAU5QPNONMVN47ABUN6WE',
 }
 
+let spinner
+
 /*    understand/
  * main entry point into our program
  *
@@ -42,34 +44,38 @@ const TSS = {
  * ownership to buyer
  */
 async function main() {
+  try {
+    const claim = await buyer_claimable_balance()
+    const nft = await seller_create_nft(claim)
+    const xdr = await seller_xcute_tss(nft, claim)
 
-  const claim = await buyer_claimable_balance()
-  const nft = await seller_create_nft(claim)
-  const xdr = await seller_xcute_tss(nft, claim)
-
-  await seller_sign_and_deliver(xdr)
+    await seller_sign_and_deliver(xdr)
+  } catch(e) {
+    spinner.fail()
+    console.error(e)
+  }
 }
 
 async function buyer_claimable_balance() {
-  const spinner = ora(`${chalk.yellow('buyer:')} Creating claimable balance`).start()
-  await dummy()
+  spinner = ora(`${chalk.yellow('buyer:')} Creating claimable balance`).start()
+  dummy()
   spinner.succeed(`${chalk.yellow('buyer:')} Claimable balance created! 💸`)
 }
 
 async function seller_create_nft(claim) {
-  const spinner = ora(`${chalk.green('seller:')} Creating NFT`).start()
+  spinner = ora(`${chalk.green('seller:')} Creating NFT`).start()
   await dummy()
   spinner.succeed(`${chalk.green('seller:')} NFT created! ✨`)
 }
 
 async function seller_xcute_tss(nft, claim) {
-  const spinner = ora(`${chalk.green('seller:')} Execute Smart Contract on TSS`).start()
+  spinner = ora(`${chalk.green('seller:')} Execute Smart Contract on TSS`).start()
   await dummy()
   spinner.succeed(`${chalk.green('seller:')} Received Smart Contract Envelope ✉️`)
 }
 
 async function seller_sign_and_deliver(xdr) {
-  const spinner = ora(`${chalk.green('seller:')} Sign and Deliver NFT via Smart Contract`).start()
+  spinner = ora(`${chalk.green('seller:')} Sign and Deliver NFT via Smart Contract`).start()
   await dummy()
   spinner.succeed(`${chalk.green('seller:')} NFT Delivered! 😇`)
 }
