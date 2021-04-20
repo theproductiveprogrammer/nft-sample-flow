@@ -1,6 +1,6 @@
 {
   "name": "nft-sample-flow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A quick sample demo of an NFT with a TSS Server",
   "main": "index.js",
   "scripts": {
