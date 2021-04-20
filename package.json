@@ -9,6 +9,8 @@
   "author": "charles.lobo@gmail.com",
   "license": "UNLICENSED",
   "dependencies": {
+    "chalk": "^4.1.0",
+    "ora": "^5.4.0",
     "stellar-sdk": "^8.1.1"
   }
 }

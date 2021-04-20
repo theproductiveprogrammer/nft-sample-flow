@@ -1,5 +1,7 @@
 'use strict'
 const StellarSdk = require('stellar-sdk')
+const ora = require('ora')
+const chalk = require('chalk')
 
 const LIVE_HORIZON = "https://horizon.stellar.org/"
 const TEST_HORIZON = "https://horizon-testnet.stellar.org/"
@@ -48,5 +50,33 @@ async function main() {
   await seller_sign_and_deliver(xdr)
 }
 
+async function buyer_claimable_balance() {
+  const spinner = ora(`${chalk.yellow('buyer:')} Creating claimable balance`).start()
+  await dummy()
+  spinner.succeed(`${chalk.yellow('buyer:')} Claimable balance created! 💸`)
+}
+
+async function seller_create_nft(claim) {
+  const spinner = ora(`${chalk.green('seller:')} Creating NFT`).start()
+  await dummy()
+  spinner.succeed(`${chalk.green('seller:')} NFT created! ✨`)
+}
+
+async function seller_xcute_tss(nft, claim) {
+  const spinner = ora(`${chalk.green('seller:')} Execute Smart Contract on TSS`).start()
+  await dummy()
+  spinner.succeed(`${chalk.green('seller:')} Received Smart Contract Envelope ✉️`)
+}
+
+async function seller_sign_and_deliver(xdr) {
+  const spinner = ora(`${chalk.green('seller:')} Sign and Deliver NFT via Smart Contract`).start()
+  await dummy()
+  spinner.succeed(`${chalk.green('seller:')} NFT Delivered! 😇`)
+}
+
+
+function dummy() {
+  return new Promise(resolve => setTimeout(resolve, 2000))
+}
 
 main().then(() => 1).catch(e => console.error(e))
