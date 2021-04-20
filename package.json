@@ -4,8 +4,11 @@
   "description": "A quick sample demo of an NFT with a TSS Server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ."
   },
   "author": "charles.lobo@gmail.com",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "stellar-sdk": "^8.1.1"
+  }
 }
