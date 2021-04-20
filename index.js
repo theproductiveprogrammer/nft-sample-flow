@@ -2,6 +2,7 @@
 const StellarSdk = require('stellar-sdk')
 const ora = require('ora')
 const chalk = require('chalk')
+const req = require('@tpp/req')
 
 const LIVE_HORIZON = "https://horizon.stellar.org/"
 const TEST_HORIZON = "https://horizon-testnet.stellar.org/"
@@ -26,9 +27,11 @@ const SELLER = {
 }
 
 const TSS = {
-  url: 'https://tss-wrangler.everlife.workers.dev/',
+  url: 'http://tss-wrangler.everlife.workers.dev',
   hash: 'aaa4d948605fa72d00b3902483ed6670698c5c1c8f05a190237da609a87290a2',
   signer: 'GCYTED6QWSGDNLQ2RBXDVYSKCOUB2BC6DLKGAU5QPNONMVN47ABUN6WE',
+  salePrice: "420",
+  txFunctionFee: "AAAAAgAAAADUjFI6v/HOUlgIpwXUAEtJ25DSImdJR8sJEUHg1oMsqwAAAGQAAphYAAAADAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA6qk2UhgX6ctALOQJIPtZnBpjFwcjwWhkCN9pgmocpCiAAAAAQAAAAAAAAABAAAAABhrfySRS6VUy/kYEKAXmUDi7Y1GkhtJ65mYBTpVWcbcAAAAAAAAAAABMS0AAAAAAAAAAAHWgyyrAAAAQBL7TW9Q45FNU1Zy/YLSArozCxlMlGk65WddNGSVgqJuosdgcv7+p7rV2jFWBonpJRrh/fFnC3ieKuiOiq8VDAM=",
 }
 
 let spinner
@@ -46,7 +49,7 @@ let spinner
 async function main() {
   try {
     const claim = await buyer_claimable_balance()
-    const nft = await seller_create_nft(claim)
+    const nft = await seller_create_nft()
     const xdr = await seller_xcute_tss(nft, claim)
 
     await seller_sign_and_deliver(xdr)
@@ -116,6 +119,8 @@ async function seller_create_nft(claim) {
 
   spinner.succeed(`${chalk.green('seller:')} NFT created! ✨ ${chalk.dim(nft.publicKey())}`)
 
+  return nft.publicKey()
+
   function activate_account_1() {
     const op = {
       destination: nft.publicKey(),
@@ -160,10 +165,29 @@ async function seller_create_nft(claim) {
   }
 }
 
+/*    way/
+ * submit the nft and claim to the TSS to execute the smart contract
+ */
 async function seller_xcute_tss(nft, claim) {
   spinner = ora(`${chalk.green('seller:')} Execute Smart Contract on TSS`).start()
-  await dummy()
+
+  const op = {
+    nft_buyer: BUYER.publicKey,
+    nft_asset: nft,
+    nft_seller: SELLER.publicKey,
+    claimable_balance_id: claim,
+    signer: TSS.signer,
+    nft_sale_price: TSS.salePrice,
+    txFunctionFee: TSS.txFunctionFee,
+  }
+
+  const u = `${TSS.url}/tx-functions/${TSS.hash}`
+
+  const resp = await reqP(u, op)
+
   spinner.succeed(`${chalk.green('seller:')} Received Smart Contract Envelope ✉️`)
+
+  return resp.xdr
 }
 
 async function seller_sign_and_deliver(xdr) {
@@ -172,6 +196,15 @@ async function seller_sign_and_deliver(xdr) {
   spinner.succeed(`${chalk.green('seller:')} NFT Delivered! 😇`)
 }
 
+
+function reqP(url, data) {
+  return new Promise((res,rej) => {
+    req.post(url, data, (err, resp) => {
+      if(err) rej(err)
+      else res(resp.body)
+    })
+  })
+}
 
 function dummy() {
   return new Promise(resolve => setTimeout(resolve, 2000))
