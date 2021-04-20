@@ -56,7 +56,7 @@ async function main() {
   } catch(e) {
     spinner.fail()
     console.error(e)
-    if(e.response && e.response.data) console.error(e.response.data)
+    if(e.response && e.response.data) console.error(JSON.stringify(e.response.data, 0, 2))
   }
 }
 
