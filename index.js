@@ -46,6 +46,10 @@ let spinner
  * 3. Seller executes smart contract on TSS
  * 4. Seller signs and executes the smart contract transferring
  * ownership to buyer
+ *
+ * TODO: note that txFunctionFee needs to be occasionally created as a
+ * payment of 1 or 2 XLM to the TSS public key with the memo holding a
+ * hash of the function
  */
 async function main() {
   try {
