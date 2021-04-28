@@ -106,18 +106,40 @@ async function buyer_claimable_balance() {
   return claim
 }
 
-/* TODO: create an account with the hash of the NFT asset. For now just
- * creating a dummy account
- *    way/
- * activate the NFT account and set the TSS and seller as signatories
- */
-async function seller_create_nft(claim) {
+function generate_nft(data) {
+  const issuer = StellarSdk.Keypair.fromSecret(SELLER.secretKey)
+  const signedObject = create_signed_object_1(issuer, data)
+  const hash = StellarSdk.hash(Buffer.from(signedObject, 'utf8'))
+  return get_keypair_1(hash)
+
+  function get_keypair_1(hash) {
+    return StellarSdk.Keypair.fromRawEd25519Seed(hash)
+  }
+
+  function create_signed_object_1(issuerKeys, data) {
+    const json = JSON.stringify(data)
+    const hash = StellarSdk.hash(Buffer.from(json, 'utf-8'))
+    const signature = issuerKeys.sign(hash).toString('base64')
+    return JSON.stringify({
+      sig: signature,
+      meta: data
+    })
+  }
+}
+
+async function seller_create_nft() {
   spinner = ora(`${chalk.green('seller:')} Creating NFT`).start()
 
   const server = getSvr()
   const acc = await server.loadAccount(SELLER.publicKey)
 
-  const nft = StellarSdk.Keypair.random()
+  const data = {
+    id: '&zGY975rpfWToGn5lG9KVj2g3zMAd3n3Nmr9DQQ+ie3A=.sha256',
+    name: '@qiqqqKggAr1Mix06/gP2PT1X7TtBGajJ2w3iZIjTvsc=.ed25519',
+    image_url: 'http://149.202.214.34/everlife-ai-artist/WvGlxNnVx.jpg',
+  }
+
+  const nft = generate_nft(data)
 
   await activate_account_1()
   await set_signatories_1()
