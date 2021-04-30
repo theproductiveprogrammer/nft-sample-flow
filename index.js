@@ -135,7 +135,7 @@ async function seller_create_nft() {
 
   const data = {
     id: '&zGY975rpfWToGn5lG9KVj2g3zMAd3n3Nmr9DQQ+ie3A=.sha256',
-    name: '@qiqqqKggAr1Mix06/gP2PT1X7TtBGajJ2w3iZIjTvsc=.ed25519',
+    name: '@qiqqqKggAr1Mix06/gP2PT1X7TtBGajJ2w3iZIjTvsc=.ed25519' + Math.random(),
     image_url: 'http://149.202.214.34/everlife-ai-artist/WvGlxNnVx.jpg',
   }
 
